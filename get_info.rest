@@ -1,1 +1,1 @@
-GET http://localhost:3001/info
+GET https://murmuring-mountain-42851.herokuapp.com/info
