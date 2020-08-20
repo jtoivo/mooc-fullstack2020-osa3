@@ -2,12 +2,14 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const morgan = require("morgan");
+
 morgan.token("post-data", function (req, res) {
   return req.method === "POST" ? JSON.stringify(req.body) : "";
 });
 
 const app = express();
 app.use(bodyParser.json());
+app.use(express.static("build"));
 app.use(cors());
 app.use(
   morgan(
