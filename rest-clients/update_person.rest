@@ -1,0 +1,7 @@
+PUT https://murmuring-mountain-42851.herokuapp.com/api/persons/5f3f77ba401928a75ca26d78
+Content-Type: application/json
+
+{
+    "name": "Etu Suku",
+    "number": "12345"
+}
