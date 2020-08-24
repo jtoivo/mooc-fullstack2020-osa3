@@ -60,26 +60,15 @@ app.delete('/api/persons/:id', (req, res, next) => {
 })
 
 app.post('/api/persons', (req, res, next) => {
-  const body = req.body
+  const person = new Person({
+    name: req.body.name,
+    number: req.body.number,
+  })
 
-  if (!body.name || !body.number) {
-    return res.status(400).json({ error: 'Name and/or number missing.' })
-  }
-
-  Person.count({ name: body.name })
-    .then(cnt => {
-      if (cnt > 0) {
-        return res.status(400).json({ error: 'Name already exists.' })
-      } else {
-        const person = new Person({
-          name: body.name,
-          number: body.number,
-        })
-
-        person.save().then(savedPerson => {
-          res.json(savedPerson)
-        })
-      }
+  person
+    .save()
+    .then(savedPerson => {
+      res.json(savedPerson.toJSON())
     })
     .catch(error => next(error))
 })
@@ -87,17 +76,17 @@ app.post('/api/persons', (req, res, next) => {
 app.put('/api/persons/:id', (req, res, next) => {
   const body = req.body
 
-  if (!body.name || !body.number) {
-    return res.status(400).json({ error: 'Name and/or number missing.' })
-  }
-
   const person = {
     name: body.name,
     number: body.number,
   }
-  Person.findByIdAndUpdate(req.params.id, person, { new: true })
+  Person.findByIdAndUpdate(req.params.id, person, {
+    new: true,
+    runValidators: true,
+    context: 'query',
+  })
     .then(updatedPerson => {
-      res.json(updatedPerson)
+      res.json(updatedPerson.toJSON())
     })
     .catch(error => next(error))
 })
@@ -107,10 +96,12 @@ const unknownEndpoint = (req, res) => {
 }
 app.use(unknownEndpoint)
 
-const errorHandler = (error, request, response, next) => {
+const errorHandler = (error, req, res, next) => {
   console.log(error)
   if (error.name === 'CastError') {
-    return response.status(400).send({ error: 'Malformatted id.' })
+    return res.status(400).send({ error: 'Malformatted id.' })
+  } else if (error.name === 'ValidationError') {
+    return res.status(400).json({ error: error.message })
   }
   next(error)
 }
